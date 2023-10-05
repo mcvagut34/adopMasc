@@ -1,5 +1,5 @@
 import express from 'express';
-import { verificarToken, verificarUsuarioRegistrado } from '../controllers/autenticacion.js';
+import { verificarToken, verificarAdmin, verificarCliente } from '../controllers/autenticacion.js';
 import {
   crearNotificacion,
   obtenerNotificaciones,
@@ -13,18 +13,18 @@ const router = express.Router();
 // Todas las rutas requieren token
 
 // Crear una nueva notificación (para usuarios registrados, incluyendo administradores)
-router.post('/', verificarToken, verificarUsuarioRegistrado, crearNotificacion);
+router.post('/', verificarToken, verificarAdmin, crearNotificacion);
 
 // Obtener todas las notificaciones (para administradores y usuarios registrados)
-router.get('/', verificarToken, obtenerNotificaciones);
+router.get('/', verificarToken,verificarAdmin, verificarCliente, obtenerNotificaciones);
 
 // Obtener una notificación específica por ID (para administradores y usuarios registrados)
-router.get('/:id', verificarToken, obtenerNotificacion);
+router.get('/:id', verificarToken,verificarAdmin, obtenerNotificacion);
 
 // Actualizar una notificación por ID (solo para administradores)
-router.put('/:id', verificarToken, verificarUsuarioRegistrado, actualizarNotificacion);
+router.put('/:id', verificarToken, verificarAdmin, actualizarNotificacion);
 
 // Eliminar una notificación por ID (solo para administradores)
-router.delete('/:id', verificarToken, verificarUsuarioRegistrado, eliminarNotificacion);
+router.delete('/:id', verificarToken, verificarAdmin, eliminarNotificacion);
 
 export default router;

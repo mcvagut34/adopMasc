@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import AdopcionSchema from "./Adopcion.js";
 
 const UsuarioSchema = new mongoose.Schema(
   {nombre: {

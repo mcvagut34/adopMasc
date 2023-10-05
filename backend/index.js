@@ -18,6 +18,7 @@ import comentarioRuta from "./routes/comentario.js";
 import mascotaRuta from "./routes/mascota.js";
 import mensajesRuta from "./routes/mensajes.js";
 import notificacionesRuta from "./routes/notificaciones.js";
+import autenticacionRuta from "./routes/autenticacion.js";
 
 const app = express();
 dotenv.config();
@@ -43,7 +44,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Rutas
-
+app.use("/api/autenticacion", autenticacionRuta)
 app.use("/api/usuarios", usuariosRuta);
 app.use("/api/adopciones", adopcionRuta);
 app.use("/api/categorias", categoriaRuta);

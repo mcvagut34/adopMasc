@@ -7,7 +7,7 @@ import {
   eliminarMascota,
 } from '../controllers/mascotas.js';
 
-import { verificarToken } from '../controllers/autenticacion.js'; // Debes importar tu función de verificación de administrador
+import { verificarToken, verificarAdmin } from '../controllers/autenticacion.js'; // Debes importar tu función de verificación de administrador
 
 const router = express.Router();
 
@@ -15,18 +15,18 @@ const router = express.Router();
 router.use(verificarToken);
 
 // Ruta para crear una nueva mascota (solo disponible para administradores)
-router.post('/', crearMascota);
+router.post('/', verificarAdmin, crearMascota);
 
 // Ruta para obtener una lista de todas las mascotas (solo disponible para administradores)
-router.get('/', obtenerMascotas);
+router.get('/', verificarAdmin, obtenerMascotas);
 
 // Ruta para obtener los detalles de una mascota específica (solo disponible para administradores)
-router.get('/:id', obtenerMascota);
+router.get('/:id', verificarAdmin, obtenerMascota);
 
 // Ruta para actualizar los datos de una mascota (solo disponible para administradores)
-router.put('/:id', actualizarMascota);
+router.put('/:id',verificarAdmin, actualizarMascota);
 
 // Ruta para eliminar una mascota (solo disponible para administradores)
-router.delete('/:id', eliminarMascota);
+router.delete('/:id',verificarAdmin, eliminarMascota);
 
 export default router;

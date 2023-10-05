@@ -54,7 +54,7 @@ export const inicioSesionUsuario = async (req, res, next) => {
 
     // Verifica si el usuario existe
     if (!usuarioEncontrado) {
-      throw crearError(401, 'Credenciales incorrectas');
+      throw crearError(401, 'USUARIO. Credenciales incorrectas');
     }
 
     // Compara la contraseña proporcionada con la contraseña almacenada en la base de datos
@@ -62,7 +62,7 @@ export const inicioSesionUsuario = async (req, res, next) => {
 
     // Si las credenciales son válidas, genera un token JWT
     if (contraseñaValida) {
-      const token = jwt.sign({ id: usuarioEncontrado._id }, 'secreto', { expiresIn: '1h' });
+      const token = jwt.sign({ id: usuarioEncontrado._id, isAdmin: usuarioEncontrado.isAdmin }, 'secreto', { expiresIn: '1h' });
       res.status(200).json({ token });
     } else {
       throw crearError(401, 'Credenciales incorrectas');
@@ -73,77 +73,77 @@ export const inicioSesionUsuario = async (req, res, next) => {
   }
 };
 
-// Función para cerrar sesión de un usuario (puede ser implementada según tus necesidades)
-export const cerrarSesionUsuario = async (req, res, next) => {
-    try {
-      // Obtén el token de acceso actual del usuario desde las cabeceras de la solicitud
-      const token = req.headers.authorization.split(' ')[1]; // Suponiendo que el token esté en las cabeceras
-  
-      // Revoca el token (esto puede depender de cómo almacenas y gestionas los tokens)
-      // Por ejemplo, podrías tener una lista negra (blacklist) de tokens revocados
-      // y agregar el token actual a la lista negra para invalidarlo
-  
-      // Elimina las cookies de sesión (esto puede depender de tu método de gestión de sesiones)
-      res.clearCookie('nombreDeLaCookie'); // Reemplaza 'nombreDeLaCookie' con el nombre de tu cookie de sesión
-  
-      // Respondemos con un mensaje de éxito
-      res.status(200).json({ mensaje: 'Sesión cerrada con éxito' });
-    } catch (error) {
-      console.error(`Error al cerrar sesión del usuario: ${error.message}`);
-      next(error);
-    }
-  };
+// // Función para cerrar sesión de un usuario
+// export const cerrarSesionUsuario = async (req, res, next) => {
+//   try {
+//     // Obtén el token de acceso actual del usuario desde las cabeceras de la solicitud
+//     const token = req.headers.authorization.split(' ')[1]; // Suponiendo que el token esté en las cabeceras
 
-// Middleware para verificar el token JWT en rutas protegidas
+//     // Revoca el token (esto puede depender de cómo almacenas y gestionas los tokens)
+//     // Por ejemplo, podrías tener una lista negra (blacklist) de tokens revocados
+//     // y agregar el token actual a la lista negra para invalidarlo
+//     // Pseudo código para agregar el token a la lista negra:
+//     // await agregarTokenAListaNegra(token);
+
+//     // Elimina las cookies de sesión (esto puede depender de tu método de gestión de sesiones)
+//     res.clearCookie('nombreDeLaCookie'); // Reemplaza 'nombreDeLaCookie' con el nombre de tu cookie de sesión
+
+//     // Respondemos con un mensaje de éxito
+//     res.status(200).json({ mensaje: 'Sesión cerrada con éxito' });
+//   } catch (error) {
+//     console.error(`Error al cerrar sesión del usuario: ${error.message}`);
+//     next(error);
+//   }
+// };
+
+// Función para cerrar sesión de un usuario
+export const cerrarSesionUsuario = (req, res) => {
+  // No necesitas hacer nada en particular para cerrar sesión cuando usas tokens JWT
+  // Los tokens son autónomos y el cliente simplemente dejará de enviarlos
+  res.status(200).json({ mensaje: 'Sesión cerrada con éxito' });
+};
+
 export const verificarToken = (req, res, next) => {
-    // Extrae el token de la solicitud (generalmente se encuentra en el encabezado 'Authorization')
-    const token = req.headers.authorization;
-  
-    if (!token) {
-      return res.status(401).json({ mensaje: 'Token no proporcionado' });
-    }
-  
-    // Verifica el token utilizando la clave secreta (deberías guardar la clave en una variable de entorno)
-    jwt.verify(token, 'secreto', (err, decoded) => {
-      if (err) {
-        return res.status(401).json({ mensaje: 'Token no válido' });
-      }
-  
-      // Si el token es válido, agrega los datos decodificados del usuario a la solicitud
-      req.usuario = decoded;
-  
-      // Verifica el campo isAdmin en el usuario decodificado
-      if (req.usuario.isAdmin) {
-        // El usuario es un administrador
-        next();
-      } else {
-        // El usuario no es un administrador, por lo que no tiene permiso para acceder
-        return res.status(403).json({ mensaje: 'No tienes permiso para realizar esta acción' });
-      }
-    });
-  };
+  // Extrae el token de la solicitud (generalmente se encuentra en el encabezado 'Authorization')
+  const token = req.headers.authorization;
 
-  export const verificarUsuarioRegistrado = (req, res, next) => {
-    // Extrae el token de la solicitud (generalmente se encuentra en el encabezado 'Authorization')
-    const token = req.headers.authorization;
-  
-    if (!token) {
-      return res.status(401).json({ mensaje: 'Token no proporcionado' });
+  if (!token) {
+    return res.status(401).json({ mensaje: 'Token no proporcionado' });
+  }
+
+  // Verifica el token utilizando la clave secreta (deberías guardar la clave en una variable de entorno)
+  jwt.verify(token, 'secreto', (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ mensaje: 'Token no válido' });
     }
-  
-    // Verifica el token utilizando la clave secreta (deberías guardar la clave en una variable de entorno)
-    jwt.verify(token, 'secreto', (err, decoded) => {
-      if (err) {
-        return res.status(401).json({ mensaje: 'Token no válido' });
-      }
-  
-      // Si el token es válido, agrega los datos decodificados del usuario a la solicitud
-      req.usuario = decoded;
-  
-      // Continúa con la siguiente función de middleware
-      next();
-    });
-  };
+
+    // Si el token es válido, agrega los datos decodificados del usuario a la solicitud
+    req.usuario = decoded;
+
+    next(); // Continúa con la siguiente función de middleware o controlador
+  });
+};
+
+// Middleware para permitir solo a los administradores
+export const verificarAdmin = (req, res, next) => {
+  if (req.usuario.isAdmin) {
+    next(); // El usuario es un administrador, permite el acceso
+  } else {
+    res.status(403).json({ mensaje: 'Acceso prohibido para este rol' });
+  }
+};
+
+
+export const verificarCliente = (req, res, next) => {
+  if (!req.usuario.isAdmin) {
+    next(); // El usuario no es un administrador, lo que significa que es un cliente, permite el acceso
+  } else {
+    res.status(403).json({ mensaje: 'Acceso prohibido para este rol' });
+  }
+};
+
+
+
 
 // Función para renovar el token JWT (puede ser implementada según tus necesidades)
 export const renovarToken = async (req, res, next) => {

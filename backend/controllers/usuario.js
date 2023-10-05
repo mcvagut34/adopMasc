@@ -1,4 +1,7 @@
+import bcrypt from 'bcrypt';
 import Usuario from '../models/Usuario.js';
+import { crearError } from '../extra/error.js';
+
 
 
 export const crearUsuario = async (req, res, next) => {
@@ -21,6 +24,8 @@ export const crearUsuario = async (req, res, next) => {
       if (usuarioExistente) {
         return res.status(400).json({ mensaje: "El usuario o correo electrónico ya está registrado." });
       }
+
+      const hash = await bcrypt.hash(password, 10);
   
       const nuevoUsuario = new Usuario({
         nombre,
@@ -28,7 +33,7 @@ export const crearUsuario = async (req, res, next) => {
         fechaNacimiento,
         usuario,
         email,
-        password,
+        password: hash,
         pais,
         ciudad,
         telefono,
@@ -74,20 +79,19 @@ export const actualizarUsuario = async (req, res, next) => {
 
 export const borrarUsuario = async (req, res, next) => {
   try {
-    const isAdmin = req.user.isAdmin;
-    logger.info(`Este es el log para saber si el admin llega o no ${req.user.isAdmin}` ) // Obtener el valor de isAdmin del objeto de usuario en la solicitud
+    const isAdmin = req.usuario.isAdmin; // Obtener la propiedad 'isAdmin' del token JWT
+
     if (!isAdmin) {
       throw crearError(403, 'No tienes permiso para eliminar usuarios');
     }
-  
+
     await Usuario.findByIdAndUpdate(req.params.id, { activo: false });
-    logger.info(`Usuario eliminado con éxito por el administrador ${req.user.usuario}`);
     res.status(200).json("Usuario ha sido borrado");
   } catch (err) {
-    logger.error(`Error al eliminar usuario: ${err.message}`);
     next(err);
   }
 };
+
 
 
 
